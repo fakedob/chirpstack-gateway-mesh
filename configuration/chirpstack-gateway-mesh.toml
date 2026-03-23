@@ -45,12 +45,12 @@
   #
   # The ChirpStack Gateway Mesh will randomly use one of the configured
   # frequencies when relaying uplink and downlink messages.
-  frequencies = [868100000, 868300000, 868500000]
+  frequencies = [433175000, 433375000, 433575000]
 
   # TX Power (EIRP).
   #
   # The TX Power in EIRP used when relaying uplink and downlink messages.
-  tx_power = 16
+  tx_power = 27
 
   # Data-rate properties.
   #
@@ -63,7 +63,7 @@
     modulation = "LORA"
 
     # Spreading-factor (LoRa).
-    spreading_factor = 7
+    spreading_factor = 8
 
     # Bandwidth (LoRa).
     bandwidth = 125000

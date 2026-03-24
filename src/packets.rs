@@ -412,9 +412,10 @@ impl DownlinkMetadata {
     pub fn from_bytes(b: [u8; 6]) -> Self {
         let delay_raw = b[5] & 0x0f;
 
+        // // (self.tx_power << 4) | (self.delay - 1), in to_bytes
         let delay = match delay_raw {
             0 => 0, // immediate -> check fixes with mesh.rs relay_downlink_lora_packet
-            _ => delay_raw + 1,
+            _ => delay_raw // + 1,
         };
 
         DownlinkMetadata {
@@ -436,9 +437,10 @@ impl DownlinkMetadata {
         }
 
         // Used to be one but changed to 0 to handle Class C in mesh
-        if self.delay < 0 {
-            return Err(anyhow!("Min delay value is 0"));
-        }
+        // delay is u8, so no need for < 0 check
+        // if self.delay < 0 {
+        //     return Err(anyhow!("Min delay value is 0"));
+        // }
 
         if self.tx_power > 15 {
             return Err(anyhow!("Max tx_power value is 15"));
@@ -457,7 +459,8 @@ impl DownlinkMetadata {
             freq_b[0],
             freq_b[1],
             freq_b[2],
-            (self.tx_power << 4) | (self.delay - 1),
+            // (self.tx_power << 4) | (self.delay - 1),
+            (self.tx_power << 4) | (self.delay & 0x0F),
         ])
     }
 }

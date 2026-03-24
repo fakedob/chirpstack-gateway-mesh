@@ -350,10 +350,8 @@ async fn relay_mesh_packet(pl: &gw::UplinkFrame, mut packet: MeshPacket) -> Resu
                                 )),
                             }),
                             modulation: Some(helpers::dr_to_modulation(pl.metadata.dr, true)?),
-                            context: get_uplink_context(pl.metadata.uplink_id)? {
-                                Some(ctx) => ctx,
-                                None => Vec::new(),
-                            },
+                            context: get_uplink_context(pl.metadata.uplink_id)?
+                                .unwrap_or_default(),
                             ..Default::default()
                         }),
                         ..Default::default()

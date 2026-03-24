@@ -687,9 +687,15 @@ pub fn store_uplink_context(ctx: &[u8]) -> u16 {
 
 fn get_uplink_context(uplink_id: u16) -> Result<Vec<u8>> {
     let uplink_ctx = UPLINK_CONTEXT.lock().unwrap();
-    uplink_ctx
-        .get(&uplink_id)
-        .cloned()
-        .ok_or_else(|| vec![0; 4])
-        // .ok_or_else(|| anyhow!("No uplink context for uplink_id: {}", uplink_id))
+    // uplink_ctx
+    //     .get(&uplink_id)
+    //     .cloned()
+    //     .ok_or_else(|| anyhow!("No uplink context for uplink_id: {}", uplink_id))
+    let uplink_ctx = UPLINK_CONTEXT.lock().unwrap();
+    Ok(
+        uplink_ctx
+            .get(&uplink_id)
+            .cloned()
+            .unwrap_or_else(|| vec![0; 4])
+    )
 }

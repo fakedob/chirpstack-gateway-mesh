@@ -435,8 +435,9 @@ impl DownlinkMetadata {
             return Err(anyhow!("Max dr value is 15"));
         }
 
-        if self.delay < 1 {
-            return Err(anyhow!("Min delay value is 1"));
+        // Used to be one but changed to 0 to handle Class C in mesh
+        if self.delay < 0 {
+            return Err(anyhow!("Min delay value is 0"));
         }
 
         if self.tx_power > 15 {

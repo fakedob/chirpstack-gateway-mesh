@@ -414,7 +414,7 @@ impl DownlinkMetadata {
 
         // // (self.tx_power << 4) | (self.delay - 1), in to_bytes
         let delay = match delay_raw {
-            0 => 0, // immediate -> check fixes with mesh.rs relay_downlink_lora_packet
+            0 => 1, //0, // immediate -> check fixes with mesh.rs relay_downlink_lora_packet
             _ => delay_raw // + 1,
         };
 

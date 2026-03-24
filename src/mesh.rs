@@ -680,6 +680,9 @@ fn get_uplink_context(uplink_id: u16) -> Result<Vec<u8>> {
     let uplink_ctx = UPLINK_CONTEXT.lock().unwrap();
     uplink_ctx
         .get(&uplink_id)
-        .cloned()
-        .ok_or_else(|| anyhow!("No uplink context for uplink_id: {}", uplink_id))
+        .cloned() {
+            Ok(v) => Some(v),
+            Err(_) => None, // allow missing context
+        };
+        // .ok_or_else(|| anyhow!("No uplink context for uplink_id: {}", uplink_id))
 }

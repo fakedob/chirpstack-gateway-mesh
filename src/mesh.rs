@@ -556,7 +556,7 @@ async fn relay_downlink_lora_packet(pl: &gw::DownlinkFrame) -> Result<gw::Downli
                 .unwrap_or_default(),
             // Fixes Class C downlink schedule -> https://forum.chirpstack.io/t/gateway-mesh-fails-to-relay-downlinks-to-class-c-devices/24590/2
             // will handle 0 in packets.rs
-            Some(gw::timing::Parameters::Immediately(_)) => 0,
+            Some(gw::timing::Parameters::Immediately(_)) => 1,
             _ => {
                 return Err(anyhow!("Only Delay or Immediately timing is supported"));
             }

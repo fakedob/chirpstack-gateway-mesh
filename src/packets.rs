@@ -412,10 +412,9 @@ impl DownlinkMetadata {
     pub fn from_bytes(b: [u8; 6]) -> Self {
         let delay_raw = b[5] & 0x0f;
 
-        let delay = if delay_raw == 0 {
-            0 // immediate
-        } else {
-            delay_raw + 1;
+        let delay = match delay_raw {
+            0 => 0, // immediate -> check fixes with mesh.rs relay_downlink_lora_packet
+            _ => delay_raw + 1,
         };
 
         DownlinkMetadata {

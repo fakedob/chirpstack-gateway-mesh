@@ -315,6 +315,9 @@ async fn relay_mesh_packet(pl: &gw::UplinkFrame, mut packet: MeshPacket) -> Resu
         .as_ref()
         .ok_or_else(|| anyhow!("rx_info is None"))?;
 
+
+    trace!("Mesh BRADA: {:?}", packet.payload);
+
     match &mut packet.payload {
         packets::Payload::Uplink(pl) => {
             if pl.relay_id == relay_id {
@@ -347,7 +350,10 @@ async fn relay_mesh_packet(pl: &gw::UplinkFrame, mut packet: MeshPacket) -> Resu
                                 )),
                             }),
                             modulation: Some(helpers::dr_to_modulation(pl.metadata.dr, true)?),
-                            context: get_uplink_context(pl.metadata.uplink_id)?,
+                            context: get_uplink_context(pl.metadata.uplink_id)? {
+                                Some(ctx) => ctx,
+                                None => Vec::new(),
+                            },
                             ..Default::default()
                         }),
                         ..Default::default()

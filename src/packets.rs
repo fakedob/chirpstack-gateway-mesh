@@ -410,12 +410,20 @@ pub struct DownlinkMetadata {
 
 impl DownlinkMetadata {
     pub fn from_bytes(b: [u8; 6]) -> Self {
+        let delay_raw = b[5] & 0x0f;
+
+        let delay = if delay_raw == 0 {
+            0 // immediate
+        } else {
+            delay_raw + 1;
+        };
+
         DownlinkMetadata {
             uplink_id: u16::from_be_bytes([b[0], b[1]]) >> 4,
             dr: b[1] & 0x0f,
             frequency: decode_freq(&b[2..5]).unwrap(),
             tx_power: (b[5] & 0xf0) >> 4,
-            delay: (b[5] & 0x0f) + 1,
+            delay //: (b[5] & 0x0f) + 1,
         }
     }
 

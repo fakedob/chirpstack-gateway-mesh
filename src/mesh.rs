@@ -350,8 +350,8 @@ async fn relay_mesh_packet(pl: &gw::UplinkFrame, mut packet: MeshPacket) -> Resu
                                 )),
                             }),
                             modulation: Some(helpers::dr_to_modulation(pl.metadata.dr, true)?),
-                            context: get_uplink_context(pl.metadata.uplink_id)?
-                                .unwrap_or_default(),
+                            context: get_uplink_context(pl.metadata.uplink_id)? ,
+                                // .unwrap_or_default(),
                             ..Default::default()
                         }),
                         ..Default::default()
@@ -680,15 +680,16 @@ pub fn store_uplink_context(ctx: &[u8]) -> u16 {
     uplink_id
 }
 
-fn get_uplink_context(uplink_id: u16) -> Result<Option<Vec<u8>>> {
-    let uplink_ctx = UPLINK_CONTEXT.lock().unwrap();
-    Ok(uplink_ctx.get(&uplink_id).cloned())
-}
-
-// fn get_uplink_context(uplink_id: u16) -> Result<Vec<u8>> {
+// fn get_uplink_context(uplink_id: u16) -> Result<Option<Vec<u8>>> {
 //     let uplink_ctx = UPLINK_CONTEXT.lock().unwrap();
-//     uplink_ctx
-//         .get(&uplink_id)
-//         .cloned()
-//         .ok_or_else(|| anyhow!("No uplink context for uplink_id: {}", uplink_id))
+//     Ok(uplink_ctx.get(&uplink_id).cloned())
 // }
+
+fn get_uplink_context(uplink_id: u16) -> Result<Vec<u8>> {
+    let uplink_ctx = UPLINK_CONTEXT.lock().unwrap();
+    uplink_ctx
+        .get(&uplink_id)
+        .cloned()
+        .ok_or_else(|| vec![0; 4]),
+        // .ok_or_else(|| anyhow!("No uplink context for uplink_id: {}", uplink_id))
+}

@@ -690,6 +690,6 @@ fn get_uplink_context(uplink_id: u16) -> Result<Vec<u8>> {
     uplink_ctx
         .get(&uplink_id)
         .cloned()
-        .ok_or_else(|| vec![0; 4]),
+        .ok_or_else(|| vec![0; 4])
         // .ok_or_else(|| anyhow!("No uplink context for uplink_id: {}", uplink_id))
 }

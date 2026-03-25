@@ -308,6 +308,10 @@ async fn proxy_event_mesh_packet(pl: &gw::UplinkFrame, packet: MeshPacket) -> Re
 }
 
 async fn relay_mesh_packet(pl: &gw::UplinkFrame, mut packet: MeshPacket) -> Result<()> {
+    
+    
+    info!("Mesh BRADA: {:?}", packet.payload);
+    
     let conf = config::get();
     let relay_id = backend::get_relay_id().await?;
     let rx_info = pl
@@ -315,8 +319,6 @@ async fn relay_mesh_packet(pl: &gw::UplinkFrame, mut packet: MeshPacket) -> Resu
         .as_ref()
         .ok_or_else(|| anyhow!("rx_info is None"))?;
 
-
-    info!("Mesh BRADA: {:?}", packet.payload);
 
     match &mut packet.payload {
         packets::Payload::Uplink(pl) => {

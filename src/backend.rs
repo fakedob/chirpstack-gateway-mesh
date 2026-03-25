@@ -299,7 +299,7 @@ async fn handle_event_msg(
             if let Some(rx_info) = &v.rx_info {
                 // Filter out frames with invalid CRC.
                 if rx_info.crc_status() != gw::CrcStatus::CrcOk {
-                    debug!(
+                    info!(
                         "Discarding uplink, CRC != OK, uplink_id: {}",
                         rx_info.uplink_id
                     );
@@ -308,7 +308,7 @@ async fn handle_event_msg(
 
                 // Filter out proprietary payloads.
                 if v.phy_payload.first().cloned().unwrap_or_default() & 0xe0 == 0xe0 {
-                    debug!(
+                    info!(
                         "Discarding proprietary uplink, uplink_id: {}",
                         rx_info.uplink_id
                     );
@@ -317,7 +317,7 @@ async fn handle_event_msg(
 
                 // Ignore direct uplinks.
                 if border_gateway_ignore_direct_uplinks {
-                    debug!(
+                    info!(
                         "Discarding direct uplink because of border_gateway_ignore_direct_uplinks setting, uplink_id: {}",
                         rx_info.uplink_id
                     );
@@ -326,7 +326,7 @@ async fn handle_event_msg(
 
                 // Filter uplinks based on DevAddr and JoinEUI filters.
                 if !lrwn_filters::matches(&v.phy_payload, filters) {
-                    debug!(
+                    info!(
                         "Discarding uplink because of dev_addr and join_eui filters, uplink_id: {}",
                         rx_info.uplink_id
                     );

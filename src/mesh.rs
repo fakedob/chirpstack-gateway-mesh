@@ -47,7 +47,7 @@ pub async fn handle_mesh(border_gateway: bool, pl: &gw::UplinkFrame) -> Result<(
     let mut packet = match MeshPacket::from_slice(&pl.phy_payload) {
         Ok(v) => v,
         Err(e) => {
-            debug!(
+            info!(
                 "Discarding proprietary uplink, not a valid mesh packet, error: {}, uplink_id: {}",
                 e,
                 pl.rx_info.as_ref().map(|v| v.uplink_id).unwrap_or_default()
@@ -60,14 +60,14 @@ pub async fn handle_mesh(border_gateway: bool, pl: &gw::UplinkFrame) -> Result<(
     } else {
         get_signing_key(conf.mesh.root_key)
     })? {
-        debug!("Dropping packet, invalid MIC, mesh_packet: {}", packet);
+        info!("Dropping packet, invalid MIC, mesh_packet: {}", packet);
         return Ok(());
     }
 
     // If we can't add the packet to the cache, it means we have already seen the packet and we can
     // drop it.
     if !PAYLOAD_CACHE.lock().unwrap().add((&packet).into()) {
-        trace!(
+        info!(
             "Dropping packet as it has already been seen, mesh_packet: {}",
             packet
         );

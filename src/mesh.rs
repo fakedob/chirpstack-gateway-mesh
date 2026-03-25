@@ -38,6 +38,11 @@ pub async fn handle_uplink(border_gateway: bool, pl: &gw::UplinkFrame) -> Result
 
 // Handle Proprietary LoRaWAN payload (mesh encapsulated).
 pub async fn handle_mesh(border_gateway: bool, pl: &gw::UplinkFrame) -> Result<()> {
+
+    info!(
+        "here 1"
+    );
+
     let conf = config::get();
     let mut packet = match MeshPacket::from_slice(&pl.phy_payload) {
         Ok(v) => v,
@@ -72,7 +77,7 @@ pub async fn handle_mesh(border_gateway: bool, pl: &gw::UplinkFrame) -> Result<(
     // Decrypt the packet (in case it contains an encrypted payload).
     packet.decrypt(get_encryption_key(conf.mesh.root_key))?;
 
-    debug!(
+    info!(
         "Mesh frame received - {}, mesh_packet: {}",
         helpers::format_uplink(pl)?,
         packet

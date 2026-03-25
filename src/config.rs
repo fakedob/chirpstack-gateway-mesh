@@ -85,7 +85,7 @@ impl Default for Mesh {
                 code_rate: Some(CodeRate::Cr45),
                 bitrate: 0,
             },
-            tx_power: 16,
+            tx_power: 27,
             proxy_api: ProxyApi::default(),
             filters: Filters::default(),
             border_gateway: false,

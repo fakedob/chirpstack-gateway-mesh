@@ -292,7 +292,7 @@ async fn handle_event_msg(
     event: gw::Event,
     filters: &lrwn_filters::Filters,
 ) -> Result<()> {
-    trace!("Handling event, event: {:?}", event,);
+    info!("Handling event, event: {:?}", event,);
 
     match &event.event {
         Some(gw::event::Event::UplinkFrame(v)) => {
@@ -349,7 +349,7 @@ async fn handle_event_msg(
 }
 
 async fn handle_mesh_event_msg(border_gateway: bool, event: gw::Event) -> Result<()> {
-    trace!("Handling mesh event, event: {:?}", event);
+    info!("Handling mesh event, event: {:?}", event);
 
     if let Some(gw::event::Event::UplinkFrame(v)) = &event.event {
         if let Some(rx_info) = &v.rx_info {

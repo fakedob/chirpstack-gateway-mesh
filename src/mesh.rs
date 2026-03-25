@@ -316,7 +316,7 @@ async fn relay_mesh_packet(pl: &gw::UplinkFrame, mut packet: MeshPacket) -> Resu
         .ok_or_else(|| anyhow!("rx_info is None"))?;
 
 
-    trace!("Mesh BRADA: {:?}", packet.payload);
+    info!("Mesh BRADA: {:?}", packet.payload);
 
     match &mut packet.payload {
         packets::Payload::Uplink(pl) => {

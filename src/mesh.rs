@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex};
-use std::time::SystemTime;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use anyhow::Result;
 use chirpstack_api::{gw, prost_types};
@@ -556,7 +556,7 @@ async fn relay_downlink_lora_packet(pl: &gw::DownlinkFrame) -> Result<gw::Downli
                 .unwrap_or_default(),
             // Fixes Class C downlink schedule -> https://forum.chirpstack.io/t/gateway-mesh-fails-to-relay-downlinks-to-class-c-devices/24590/2
             // will handle 0 in packets.rs
-            Some(gw::timing::Parameters::Immediately(_)) => 0,
+            Some(gw::timing::Parameters::Immediately(_)) => 1,
             _ => {
                 return Err(anyhow!("Only Delay or Immediately timing is supported"));
             }
@@ -688,10 +688,29 @@ fn get_uplink_context(uplink_id: u16) -> Result<Vec<u8>> {
     //     .cloned()
     //     .ok_or_else(|| anyhow!("No uplink context for uplink_id: {}", uplink_id))
     let uplink_ctx = UPLINK_CONTEXT.lock().unwrap();
+
+    let now = get_current_concentrator_count();
+        
     Ok(
         uplink_ctx
             .get(&uplink_id)
             .cloned()
-            .unwrap_or_else(|| vec![0; 4])
+            .unwrap_or_else(|| now.to_le_bytes().to_vec())
     )
+}
+
+fn get_current_concentrator_count() -> u32 {
+    // You must hook this into the existing concentrator time source.
+    // This function likely already exists somewhere in your codebase.
+    // If not, use the same source used when uplinks are received.
+
+    // use std::time::{SystemTime, UNIX_EPOCH};
+
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap();
+
+    // fallback approximation in microseconds
+    // NOTE: replace with real concentrator counter if accessible
+    (now.as_micros() as u32)
 }

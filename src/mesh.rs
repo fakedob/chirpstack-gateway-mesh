@@ -348,6 +348,26 @@ async fn relay_mesh_packet(pl: &gw::UplinkFrame, mut packet: MeshPacket) -> Resu
                 // We must unwrap the mesh encapsulated packet and send it to the
                 // End Device.
 
+                // If delay is 0, than the timing should be Immediately for Class C Downlinks
+                let timing = if pl.metadata.delay > 0 {
+                    gw::Timing {
+                        parameters: Some(gw::timing::Parameters::Delay(
+                            gw::DelayTimingInfo {
+                                delay: Some(prost_types::Duration {
+                                    seconds: pl.metadata.delay.into(),
+                                    ..Default::default()
+                                }),
+                            },
+                        )),
+                    }
+                } else {
+                    gw::Timing {
+                        parameters: Some(gw::timing::Parameters::Immediately(
+                            gw::ImmediatelyTimingInfo {},
+                        )),
+                    }
+                };
+
                 let pl = gw::DownlinkFrame {
                     downlink_id: getrandom::u32()?,
                     items: vec![gw::DownlinkFrameItem {
@@ -355,16 +375,7 @@ async fn relay_mesh_packet(pl: &gw::UplinkFrame, mut packet: MeshPacket) -> Resu
                         tx_info: Some(gw::DownlinkTxInfo {
                             frequency: pl.metadata.frequency,
                             power: helpers::index_to_tx_power(pl.metadata.tx_power)?,
-                            timing: Some(gw::Timing {
-                                parameters: Some(gw::timing::Parameters::Delay(
-                                    gw::DelayTimingInfo {
-                                        delay: Some(prost_types::Duration {
-                                            seconds: pl.metadata.delay.into(),
-                                            ..Default::default()
-                                        }),
-                                    },
-                                )),
-                            }),
+                            timing: Some(timing),
                             modulation: Some(helpers::dr_to_modulation(pl.metadata.dr, true)?),
                             context: get_uplink_context(pl.metadata.uplink_id)? ,
                                 // .unwrap_or_default(),

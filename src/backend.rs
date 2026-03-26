@@ -277,12 +277,13 @@ async fn event_loop(
 }
 
 async fn mesh_event_loop(border_gateway: bool, mut event_rx: mpsc::UnboundedReceiver<gw::Event>) {
-    trace!("Starting mesh event loop");
+    info!("Starting mesh event loop");
     while let Some(event) = event_rx.recv().await {
         if let Err(e) = handle_mesh_event_msg(border_gateway, event).await {
             error!("Handle mesh event error: {}", e);
             continue;
         }
+        info!("Brada into mesh_event_loop: {:?}", event);
     }
 }
 

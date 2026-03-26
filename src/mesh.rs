@@ -569,6 +569,8 @@ async fn relay_downlink_lora_packet(pl: &gw::DownlinkFrame) -> Result<gw::Downli
             }
         };
 
+        info!("tx_info in asd {:?}, look for ctx[4..6] in .context", tx_info)
+
         let ctx = tx_info
             .context
             .get(CTX_PREFIX.len()..CTX_PREFIX.len() + 6)

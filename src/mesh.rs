@@ -66,9 +66,16 @@ pub async fn handle_mesh(border_gateway: bool, pl: &gw::UplinkFrame) -> Result<(
 
     // If we can't add the packet to the cache, it means we have already seen the packet and we can
     // drop it.
-    info!("packet.delay {:?}", packet.payload.metadata);
 
-    if (!PAYLOAD_CACHE.lock().unwrap().add((&packet).into()) && packet.payload.metadata.delay > 0) {
+    let is_immediate_class_c: bool = match &packet.payload {
+        // Payload::Uplink(v) => v.metadata.delay,
+        Payload::Downlink(v) => v.metadata.delay == 0,
+        _ => false, // Event / Command don't have delay
+    };
+
+    info!("payload type: {:?}", packet.mhdr.payload_type);
+
+    if (!PAYLOAD_CACHE.lock().unwrap().add((&packet).into()) && is_immediate_class_c) {
         info!(
             "Dropping packet as it has already been seen, mesh_packet: {}",
             packet

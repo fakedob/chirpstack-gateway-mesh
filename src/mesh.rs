@@ -66,7 +66,8 @@ pub async fn handle_mesh(border_gateway: bool, pl: &gw::UplinkFrame) -> Result<(
 
     // If we can't add the packet to the cache, it means we have already seen the packet and we can
     // drop it.
-    if !PAYLOAD_CACHE.lock().unwrap().add((&packet).into()) {
+    info!("packet.delay {:?}", packet.delay)
+    if !PAYLOAD_CACHE.lock().unwrap().add((&packet).into() && packet.delay > 0) {
         info!(
             "Dropping packet as it has already been seen, mesh_packet: {}",
             packet
@@ -563,7 +564,7 @@ async fn relay_downlink_lora_packet(pl: &gw::DownlinkFrame) -> Result<gw::Downli
                 .unwrap_or_default(),
             // Fixes Class C downlink schedule -> https://forum.chirpstack.io/t/gateway-mesh-fails-to-relay-downlinks-to-class-c-devices/24590/2
             // will handle 0 in packets.rs
-            Some(gw::timing::Parameters::Immediately(_)) => 1,
+            Some(gw::timing::Parameters::Immediately(_)) => 0,
             _ => {
                 return Err(anyhow!("Only Delay or Immediately timing is supported"));
             }

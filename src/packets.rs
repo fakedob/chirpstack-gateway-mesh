@@ -410,20 +410,20 @@ pub struct DownlinkMetadata {
 
 impl DownlinkMetadata {
     pub fn from_bytes(b: [u8; 6]) -> Self {
-        // let delay_raw = b[5] & 0x0f;
+        let delay_raw = b[5] & 0x0f;
 
-        // // // (self.tx_power << 4) | (self.delay - 1), in to_bytes
-        // let delay = match delay_raw {
-        //     0 => 0, // immediate -> check fixes with mesh.rs relay_downlink_lora_packet
-        //     _ => delay_raw// + 1,
-        // };
+        // // (self.tx_power << 4) | (self.delay - 1), in to_bytes
+        let delay = match delay_raw {
+            0 => 0, // immediate -> check fixes with mesh.rs relay_downlink_lora_packet
+            _ => delay_raw// + 1,
+        };
 
         DownlinkMetadata {
             uplink_id: u16::from_be_bytes([b[0], b[1]]) >> 4,
             dr: b[1] & 0x0f,
             frequency: decode_freq(&b[2..5]).unwrap(),
             tx_power: (b[5] & 0xf0) >> 4,
-            delay: (b[5] & 0x0f) + 1,
+            delay//: (b[5] & 0x0f) + 1,
         }
     }
 
@@ -436,9 +436,10 @@ impl DownlinkMetadata {
             return Err(anyhow!("Max dr value is 15"));
         }
 
-        if self.delay < 1 {
-            return Err(anyhow!("Min delay value is 1"));
-        }
+        // it can be 0 for class c
+        // if self.delay < 1 {
+        //     return Err(anyhow!("Min delay value is 1"));
+        // }
 
         if self.tx_power > 15 {
             return Err(anyhow!("Max tx_power value is 15"));
@@ -457,8 +458,8 @@ impl DownlinkMetadata {
             freq_b[0],
             freq_b[1],
             freq_b[2],
-            (self.tx_power << 4) | (self.delay - 1),
-            // (self.tx_power << 4) | (self.delay & 0x0F),
+            // (self.tx_power << 4) | (self.delay - 1),
+            (self.tx_power << 4) | (self.delay & 0x0F),
         ])
     }
 }

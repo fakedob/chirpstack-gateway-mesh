@@ -66,8 +66,9 @@ pub async fn handle_mesh(border_gateway: bool, pl: &gw::UplinkFrame) -> Result<(
 
     // If we can't add the packet to the cache, it means we have already seen the packet and we can
     // drop it.
-    info!("packet.delay {:?}", packet.delay)
-    if !PAYLOAD_CACHE.lock().unwrap().add((&packet).into() && packet.delay > 0) {
+    info!("packet.delay {:?}", packet.delay);
+    
+    if (!PAYLOAD_CACHE.lock().unwrap().add((&packet).into()) && packet.delay > 0) {
         info!(
             "Dropping packet as it has already been seen, mesh_packet: {}",
             packet
@@ -570,7 +571,7 @@ async fn relay_downlink_lora_packet(pl: &gw::DownlinkFrame) -> Result<gw::Downli
             }
         };
 
-        info!("tx_info in asd {:?}, look for ctx[4..6] in .context", tx_info)
+        info!("tx_info in asd {:?}, look for ctx[4..6] in .context", tx_info);
 
         let ctx = tx_info
             .context

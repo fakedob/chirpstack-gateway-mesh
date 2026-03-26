@@ -66,9 +66,9 @@ pub async fn handle_mesh(border_gateway: bool, pl: &gw::UplinkFrame) -> Result<(
 
     // If we can't add the packet to the cache, it means we have already seen the packet and we can
     // drop it.
-    info!("packet.delay {:?}", packet.delay);
-    
-    if (!PAYLOAD_CACHE.lock().unwrap().add((&packet).into()) && packet.delay > 0) {
+    info!("packet.delay {:?}", packet.metadata);
+
+    if (!PAYLOAD_CACHE.lock().unwrap().add((&packet).into()) && packet.metadata.delay > 0) {
         info!(
             "Dropping packet as it has already been seen, mesh_packet: {}",
             packet

@@ -75,7 +75,7 @@ pub async fn handle_mesh(border_gateway: bool, pl: &gw::UplinkFrame) -> Result<(
 
     info!("payload type: {:?}", packet.mhdr.payload_type);
 
-    if (!PAYLOAD_CACHE.lock().unwrap().add((&packet).into()) && is_immediate_class_c) {
+    if (!PAYLOAD_CACHE.lock().unwrap().add((&packet).into()) && !is_immediate_class_c) {
         info!(
             "Dropping packet as it has already been seen, mesh_packet: {}",
             packet

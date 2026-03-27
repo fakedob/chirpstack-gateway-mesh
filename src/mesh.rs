@@ -60,8 +60,14 @@ pub async fn handle_mesh(border_gateway: bool, pl: &gw::UplinkFrame) -> Result<(
     }
 
     // If we can't add the packet to the cache, it means we have already seen the packet and we can
-    // drop it.
-    if !PAYLOAD_CACHE.lock().unwrap().add((&packet).into()) {
+    // drop it. Unless we are sending Class C downlink, which is immediate
+
+    let is_immediate_class_c: bool = match &packet.payload {
+        Payload::Downlink(v) => v.metadata.delay == 0,
+        _ => false, // Command have delay or is not downlink
+    };
+
+    if (!PAYLOAD_CACHE.lock().unwrap().add((&packet).into()) && !is_immediate_class_c) {
         trace!(
             "Dropping packet as it has already been seen, mesh_packet: {}",
             packet
@@ -329,6 +335,26 @@ async fn relay_mesh_packet(pl: &gw::UplinkFrame, mut packet: MeshPacket) -> Resu
                 // We must unwrap the mesh encapsulated packet and send it to the
                 // End Device.
 
+                // If delay is 0, than the timing should be Immediately for Class C Downlinks
+                let timing = if pl.metadata.delay > 0 {
+                    gw::Timing {
+                        parameters: Some(gw::timing::Parameters::Delay(
+                            gw::DelayTimingInfo {
+                                delay: Some(prost_types::Duration {
+                                    seconds: pl.metadata.delay.into(),
+                                    ..Default::default()
+                                }),
+                            },
+                        )),
+                    }
+                } else {
+                    gw::Timing {
+                        parameters: Some(gw::timing::Parameters::Immediately(
+                            gw::ImmediatelyTimingInfo {},
+                        )),
+                    }
+                };
+
                 let pl = gw::DownlinkFrame {
                     downlink_id: getrandom::u32()?,
                     items: vec![gw::DownlinkFrameItem {
@@ -336,16 +362,7 @@ async fn relay_mesh_packet(pl: &gw::UplinkFrame, mut packet: MeshPacket) -> Resu
                         tx_info: Some(gw::DownlinkTxInfo {
                             frequency: pl.metadata.frequency,
                             power: helpers::index_to_tx_power(pl.metadata.tx_power)?,
-                            timing: Some(gw::Timing {
-                                parameters: Some(gw::timing::Parameters::Delay(
-                                    gw::DelayTimingInfo {
-                                        delay: Some(prost_types::Duration {
-                                            seconds: pl.metadata.delay.into(),
-                                            ..Default::default()
-                                        }),
-                                    },
-                                )),
-                            }),
+                            timing: Some(timing),
                             modulation: Some(helpers::dr_to_modulation(pl.metadata.dr, true)?),
                             context: get_uplink_context(pl.metadata.uplink_id)?,
                             ..Default::default()
@@ -550,8 +567,9 @@ async fn relay_downlink_lora_packet(pl: &gw::DownlinkFrame) -> Result<gw::Downli
                 .as_ref()
                 .map(|v| v.seconds as u8)
                 .unwrap_or_default(),
+            Some(gw::timing::Parameters::Immediately(_)) => 0,
             _ => {
-                return Err(anyhow!("Only Delay timing is supported"));
+                return Err(anyhow!("Only Delay or Immediately timing is supported"));
             }
         };
 
@@ -673,10 +691,29 @@ pub fn store_uplink_context(ctx: &[u8]) -> u16 {
     uplink_id
 }
 
+
 fn get_uplink_context(uplink_id: u16) -> Result<Vec<u8>> {
+    // let uplink_ctx = UPLINK_CONTEXT.lock().unwrap();
+    // uplink_ctx
+    //     .get(&uplink_id)
+    //     .cloned()
+    //     .ok_or_else(|| anyhow!("No uplink context for uplink_id: {}", uplink_id))
+    // let uplink_ctx = UPLINK_CONTEXT.lock().unwrap();
+
+    // let now = get_current_concentrator_count();
+        
+    // Ok(
+    //     uplink_ctx
+    //         .get(&uplink_id)
+    //         .cloned()
+    //         .unwrap_or_else(|| now.to_le_bytes().to_vec())
+    // )
+
     let uplink_ctx = UPLINK_CONTEXT.lock().unwrap();
-    uplink_ctx
-        .get(&uplink_id)
-        .cloned()
-        .ok_or_else(|| anyhow!("No uplink context for uplink_id: {}", uplink_id))
+    Ok(
+        uplink_ctx
+            .get(&uplink_id)
+            .cloned()
+            .unwrap_or_else(|| vec![0; 4])
+    )
 }
